@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[43,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+license="Apache License Version 2.0"
+issueTrackerURL="https://github.com/MCUpdater-Mods/InfoHUD/issues"
+[[mods]]
+modId="infohud"
+version="${file.jarVersion}"
+displayName="InfoHUD"
+credits="lunatrius for making InGame Info XML, the inspiration for this mod"
+authors="smbarbour"
+description='''
+A customizable information display mod
+'''
