@@ -1,0 +1,12 @@
+{
+  "infohud.configuration.top_center": "Top Center",
+  "infohud.configuration.top_left": "Top Left",
+  "infohud.configuration.top_right": "Top Right",
+  "infohud.configuration.middle_right": "Middle Right",
+  "infohud.configuration.middle_left": "Middle Left",
+  "infohud.configuration.bottom_left": "Bottom Left",
+  "infohud.configuration.bottom_right": "Bottom Right",
+  "infohud.configuration.entries": "Entries",
+  "infohud.configuration.xOffset": "X Offset",
+  "infohud.configuration.yOffset": "Y Offset"
+}

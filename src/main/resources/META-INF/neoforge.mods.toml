@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}" #mandatory
+license="${mod_license}"
+issueTrackerURL="https://github.com/MCUpdater-Mods/InfoHUD/issues"
+[[mods]]
+modId="${mod_id}" #mandatory
+version="${mod_version}" #mandatory
+displayName="${mod_name}" #mandatory
+credits="lunatrius for making InGame Info XML, the inspiration for this mod"
+authors="${mod_authors}" #optional
+description='''${mod_description}'''
+
+[[dependencies.${mod_id}]] #optional
+# the modid of the dependency
+modId="neoforge" #mandatory
+type="required" #mandatory
+versionRange="${neo_version_range}" #mandatory
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="CLIENT"
