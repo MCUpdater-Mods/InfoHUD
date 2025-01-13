@@ -6,5 +6,5 @@ import net.minecraft.client.player.LocalPlayer;
 
 @FunctionalInterface
 public interface TagProvider {
-	Object getValue(Minecraft minecraft, ClientLevel level, LocalPlayer player, float partialTick);
+	Object getValue(String[] elements, Minecraft minecraft, ClientLevel level, LocalPlayer player, float partialTick) throws IllegalArgumentException;
 }

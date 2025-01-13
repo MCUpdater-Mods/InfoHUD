@@ -1,0 +1,37 @@
+package org.mcupdater.infohud.network;
+
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.mcupdater.infohud.InfoHUD;
+
+@EventBusSubscriber(modid = InfoHUD.MODID, bus = EventBusSubscriber.Bus.MOD)
+public class NetworkHandler {
+
+	@SubscribeEvent
+	public static void register(final RegisterPayloadHandlersEvent event) {
+		final PayloadRegistrar registrar = event.registrar("1");
+		registrar.playToClient(
+				InventoryStatus.TYPE,
+				InventoryStatus.STREAM_CODEC,
+				ClientHandlers::inventoryHandler
+		);
+		registrar.playToClient(
+				StructureKey.TYPE,
+				StructureKey.STREAM_CODEC,
+				ClientHandlers::structureHandler
+		);
+		registrar.playToClient(
+				ItemConfigPacket.TYPE,
+				ItemConfigPacket.STREAM_CODEC,
+				ClientHandlers::itemConfigHandler
+		);
+		registrar.playToClient(
+				BedDistance.TYPE,
+				BedDistance.STREAM_CODEC,
+				ClientHandlers::bedDistanceHandler
+		);
+	}
+}
