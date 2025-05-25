@@ -12,7 +12,7 @@ public class NetworkHandler {
 
 	@SubscribeEvent
 	public static void register(final RegisterPayloadHandlersEvent event) {
-		final PayloadRegistrar registrar = event.registrar("1");
+		final PayloadRegistrar registrar = event.registrar("1").optional();
 		registrar.playToClient(
 				InventoryStatus.TYPE,
 				InventoryStatus.STREAM_CODEC,
@@ -32,6 +32,16 @@ public class NetworkHandler {
 				BedDistance.TYPE,
 				BedDistance.STREAM_CODEC,
 				ClientHandlers::bedDistanceHandler
+		);
+		registrar.playToClient(
+				AwakeDays.TYPE,
+				AwakeDays.STREAM_CODEC,
+				ClientHandlers::awakeDaysHandler
+		);
+		registrar.playToClient(
+				SlimeChunk.TYPE,
+				SlimeChunk.STREAM_CODEC,
+				ClientHandlers::slimeChunkHandler
 		);
 	}
 }

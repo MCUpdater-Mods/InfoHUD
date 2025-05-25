@@ -18,21 +18,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.mcupdater.infohud.InfoHUD;
 import org.mcupdater.infohud.InfoHUDClient;
 import org.mcupdater.infohud.setup.Config;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Tags {
-
-	public static String debug(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
-		return Float.toString(level.getSkyDarken(partialTick) * 15.0f);
-	}
 
 	public static class Formatting {
 		public static final String FORMATTING_CHAR = "\u00A7";
@@ -201,6 +199,10 @@ public class Tags {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			return Functions.translateInternal(DIRECTIONS[Mth.floor(localPlayer.getYRot() * 8.0 / 360.0 + 0.5) & 7], localPlayer);
 		}
+
+		public static Integer awakeDays(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return InfoHUDClient.awakeDays;
+		}
 	}
 
 	public static class Time {
@@ -213,7 +215,7 @@ public class Tags {
 		public static String mctime(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			long time = level.getDayTime();
-			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%02d:%02d", (time / 1000) % 24, (time % 1000) * 60 / 1000);
+			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%02d:%02d", ((time / 1000) + 6) % 24, (time % 1000) * 60 / 1000);
 		}
 
 		public static String rltime(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
@@ -261,6 +263,46 @@ public class Tags {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			return Functions.translateInternal(Util.makeDescriptionId("dimension", clientLevel.dimension().location()),localPlayer);
 		}
+
+		public static Boolean slimeChunk(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return InfoHUDClient.slimeChunk;
+		}
+
+		public static String moonPhase(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			int phase = moonPhaseNum(strings, minecraft, clientLevel, localPlayer, v);
+			String phaseName = "";
+			switch(phase) {
+				case 0:
+					phaseName = "infohud.moonphase.full";
+					break;
+				case 1:
+					phaseName = "infohud.moonphase.waning_gibbous";
+					break;
+				case 2:
+					phaseName = "infohud.moonphase.third_quarter";
+					break;
+				case 3:
+					phaseName = "infohud.moonphase.waning_crescent";
+					break;
+				case 4:
+					phaseName = "infohud.moonphase.new";
+					break;
+				case 5:
+					phaseName = "infohud.moonphase.waxing_crescent";
+					break;
+				case 6:
+					phaseName = "infohud.moonphase.first_quarter";
+					break;
+				case 7:
+					phaseName = "infohud.moonphase.waxing_gibbous";
+					break;
+			}
+			return Functions.translateInternal(phaseName, localPlayer);
+		}
+
+		public static Integer moonPhaseNum(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return clientLevel.getMoonPhase();
+		}
 	}
 
 	public static class Equipment {
@@ -271,155 +313,7 @@ public class Tags {
 					stack.getDescriptionId();
 		}
 
-		public static String bootsdamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack boots = localPlayer.getInventory().getArmor(0);
-			if (boots.isEmpty() || !boots.isDamageableItem()) return "(--/--)";
-			return String.format("(%d/%d)",(boots.getMaxDamage()-boots.getDamageValue()), boots.getMaxDamage());
-		}
-
-		public static String bootsdamage_formatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			String color;
-			ItemStack boots = localPlayer.getInventory().getArmor(0);
-			if (boots.isEmpty() || !boots.isDamageableItem()) return Formatting.DARK_GRAY + "(--/--)" + Formatting.RESET;
-			int damageLevelpct = Math.round(((boots.getMaxDamage()-boots.getDamageValue()) * 100f)/boots.getMaxDamage());
-			if (damageLevelpct >= 80) {
-				color = Formatting.GREEN;
-			} else if (damageLevelpct >= 60) {
-				color = Formatting.DARK_GREEN;
-			} else if (damageLevelpct >= 40) {
-				color = Formatting.GOLD;
-			} else if (damageLevelpct >= 20) {
-				color = Formatting.YELLOW;
-			} else if (damageLevelpct >= 10) {
-				color = Formatting.DARK_RED;
-			} else {
-				color = Formatting.RED;
-			}
-			return color + String.format("(%d/%d)",(boots.getMaxDamage()-boots.getDamageValue()), boots.getMaxDamage()) + Formatting.RESET;
-		}
-
-		public static String bootsname(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack boots = localPlayer.getInventory().getArmor(0);
-			if (boots.isEmpty()) return "";
-			String name = getNameFromStack(boots);
-			return Functions.translateInternal(name, localPlayer);
-		}
-
-		public static String leggingsdamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack leggings = localPlayer.getInventory().getArmor(1);
-			if (leggings.isEmpty() || !leggings.isDamageableItem()) return "(--/--)";
-			return String.format("(%d/%d)",(leggings.getMaxDamage()-leggings.getDamageValue()), leggings.getMaxDamage());
-		}
-
-		public static String leggingsdamage_formatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			String color;
-			ItemStack leggings = localPlayer.getInventory().getArmor(1);
-			if (leggings.isEmpty() || !leggings.isDamageableItem()) return Formatting.DARK_GRAY + "(--/--)" + Formatting.RESET;
-			int damageLevelpct = Math.round(((leggings.getMaxDamage()-leggings.getDamageValue()) * 100f)/leggings.getMaxDamage());
-			if (damageLevelpct >= 80) {
-				color = Formatting.GREEN;
-			} else if (damageLevelpct >= 60) {
-				color = Formatting.DARK_GREEN;
-			} else if (damageLevelpct >= 40) {
-				color = Formatting.GOLD;
-			} else if (damageLevelpct >= 20) {
-				color = Formatting.YELLOW;
-			} else if (damageLevelpct >= 10) {
-				color = Formatting.DARK_RED;
-			} else {
-				color = Formatting.RED;
-			}
-			return color + String.format("(%d/%d)",(leggings.getMaxDamage()-leggings.getDamageValue()), leggings.getMaxDamage()) + Formatting.RESET;
-		}
-
-		public static String leggingsname(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack leggings = localPlayer.getInventory().getArmor(1);
-			if (leggings.isEmpty()) return "";
-			String name = getNameFromStack(leggings);
-			return Functions.translateInternal(name, localPlayer);
-		}
-
-		public static String chestplatedamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack chestplate = localPlayer.getInventory().getArmor(2);
-			if (chestplate.isEmpty() || !chestplate.isDamageableItem()) return "(--/--)";
-			return String.format("(%d/%d)",(chestplate.getMaxDamage()-chestplate.getDamageValue()), chestplate.getMaxDamage());
-		}
-
-		public static String chestplatedamage_formatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			String color;
-			ItemStack chestplate = localPlayer.getInventory().getArmor(2);
-			if (chestplate.isEmpty() || !chestplate.isDamageableItem()) return Formatting.DARK_GRAY + "(--/--)" + Formatting.RESET;
-			int damageLevelpct = Math.round(((chestplate.getMaxDamage()-chestplate.getDamageValue()) * 100f)/chestplate.getMaxDamage());
-			if (damageLevelpct >= 80) {
-				color = Formatting.GREEN;
-			} else if (damageLevelpct >= 60) {
-				color = Formatting.DARK_GREEN;
-			} else if (damageLevelpct >= 40) {
-				color = Formatting.GOLD;
-			} else if (damageLevelpct >= 20) {
-				color = Formatting.YELLOW;
-			} else if (damageLevelpct >= 10) {
-				color = Formatting.DARK_RED;
-			} else {
-				color = Formatting.RED;
-			}
-			return color + String.format("(%d/%d)",(chestplate.getMaxDamage()-chestplate.getDamageValue()), chestplate.getMaxDamage()) + Formatting.RESET;
-		}
-
-		public static String chestplatename(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack chestplate = localPlayer.getInventory().getArmor(2);
-			if (chestplate.isEmpty()) return "";
-			String name = getNameFromStack(chestplate);
-			return Functions.translateInternal(name, localPlayer);
-		}
-
-		public static String helmetdamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack helmet = localPlayer.getInventory().getArmor(3);
-			if (helmet.isEmpty() || !helmet.isDamageableItem()) return "(--/--)";
-			return String.format("(%d/%d)",(helmet.getMaxDamage()-helmet.getDamageValue()), helmet.getMaxDamage());
-		}
-
-		public static String helmetdamage_formatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			String color;
-			ItemStack helmet = localPlayer.getInventory().getArmor(3);
-			if (helmet.isEmpty() || !helmet.isDamageableItem()) return Formatting.DARK_GRAY + "(--/--)" + Formatting.RESET;
-			int damageLevelpct = Math.round(((helmet.getMaxDamage()-helmet.getDamageValue()) * 100f)/helmet.getMaxDamage());
-			if (damageLevelpct >= 80) {
-				color = Formatting.GREEN;
-			} else if (damageLevelpct >= 60) {
-				color = Formatting.DARK_GREEN;
-			} else if (damageLevelpct >= 40) {
-				color = Formatting.GOLD;
-			} else if (damageLevelpct >= 20) {
-				color = Formatting.YELLOW;
-			} else if (damageLevelpct >= 10) {
-				color = Formatting.DARK_RED;
-			} else {
-				color = Formatting.RED;
-			}
-			return color + String.format("(%d/%d)",(helmet.getMaxDamage()-helmet.getDamageValue()), helmet.getMaxDamage()) + Formatting.RESET;
-		}
-
-		public static String helmetname(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack helmet = localPlayer.getInventory().getArmor(3);
-			if (helmet.isEmpty()) return "";
-			String name = getNameFromStack(helmet);
-			return Functions.translateInternal(name, localPlayer);
-		}
-
-		public static String mainhanddamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+		public static String mainhandDamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			ItemStack mainhand = localPlayer.getInventory().getSelected();
 			if (mainhand.isEmpty()) return "--";
@@ -427,7 +321,7 @@ public class Tags {
 			return String.format("(%d/%d)",(mainhand.getMaxDamage()-mainhand.getDamageValue()), mainhand.getMaxDamage());
 		}
 
-		public static String mainhanddamage_formatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+		public static String mainhandDamageFormatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			String color;
 			ItemStack mainhand = localPlayer.getInventory().getSelected();
@@ -450,7 +344,7 @@ public class Tags {
 			return color + String.format("(%d/%d)",(mainhand.getMaxDamage()-mainhand.getDamageValue()), mainhand.getMaxDamage()) + Formatting.RESET;
 		}
 
-		public static String mainhandname(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+		public static String mainhandName(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			ItemStack mainhand = localPlayer.getInventory().getSelected();
 			if (mainhand.isEmpty()) return "";
@@ -458,7 +352,7 @@ public class Tags {
 			return Functions.translateInternal(name, localPlayer);
 		}
 
-		public static String offhanddamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+		public static String offhandDamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			ItemStack offhand = localPlayer.getInventory().offhand.get(0);
 			if (offhand.isEmpty()) return "--";
@@ -466,7 +360,7 @@ public class Tags {
 			return String.format("(%d/%d)",(offhand.getMaxDamage()-offhand.getDamageValue()), offhand.getMaxDamage());
 		}
 
-		public static String offhanddamage_formatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+		public static String offhandDamageFormatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			String color;
 			ItemStack offhand = localPlayer.getInventory().offhand.get(0);
@@ -489,12 +383,114 @@ public class Tags {
 			return color + String.format("(%d/%d)",(offhand.getMaxDamage()-offhand.getDamageValue()), offhand.getMaxDamage()) + Formatting.RESET;
 		}
 
-		public static String offhandname(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+		public static String offhandName(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			ItemStack offhand = localPlayer.getInventory().offhand.get(0);
 			if (offhand.isEmpty()) return "";
 			String name = getNameFromStack(offhand);
 			return Functions.translateInternal(name, localPlayer);
+		}
+
+		public static String armor(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float partialTick) {
+			List<String> armorTypes = List.of("boots","legs","chest","head");
+			if (parts.length != 3) throw new IllegalArgumentException("armor takes 2 arguments");
+			if (!armorTypes.contains(parts[1])) throw new IllegalArgumentException("armor argument 1 must be \"boots\", \"legs\", \"chest\", or \"head\"");
+			if (!List.of("damage", "damage_formatted", "name").contains(parts[2])) throw new IllegalArgumentException("armor argument 2 must be \"damage\", \"damage_formatted\", or \"name\"");
+			int slot = armorTypes.indexOf(parts[1]);
+			if (slot == -1) {
+				InfoHUD.LOGGER.error("Something went wrong!\n" + Arrays.toString(parts));
+				return "";
+			}
+			ItemStack stack = localPlayer.getInventory().getArmor(slot);
+			AtomicReference<String> output = new AtomicReference<>("");
+			switch(parts[2]) {
+				case "damage":
+					if (stack.isEmpty() || !stack.isDamageableItem()) {
+						output.set("--");
+						break;
+					} else {
+						output.set(String.format("(%d/%d)", stack.getMaxDamage()-stack.getDamageValue(), stack.getMaxDamage()));
+					}
+				case "damage_formatted":
+					if (stack.isEmpty() || !stack.isDamageableItem()) {
+						output.set(Formatting.DARK_GRAY + "--" + Formatting.RESET);
+						break;
+					} else {
+						String color;
+						int damageLevelpct = Math.round(((stack.getMaxDamage()-stack.getDamageValue()) * 100f)/stack.getMaxDamage());
+						if (damageLevelpct >= 80) {
+							color = Formatting.GREEN;
+						} else if (damageLevelpct >= 60) {
+							color = Formatting.DARK_GREEN;
+						} else if (damageLevelpct >= 40) {
+							color = Formatting.GOLD;
+						} else if (damageLevelpct >= 20) {
+							color = Formatting.YELLOW;
+						} else if (damageLevelpct >= 10) {
+							color = Formatting.DARK_RED;
+						} else {
+							color = Formatting.RED;
+						}
+						output.set(color + String.format("(%d/%d)", stack.getMaxDamage()-stack.getDamageValue(), stack.getMaxDamage()) + Formatting.RESET);
+						break;
+					}
+				case "name":
+					if (!stack.isEmpty()) {
+						String name = getNameFromStack(stack);
+						output.set(Functions.translateInternal(name, localPlayer));
+					}
+			}
+			return output.get();
+		}
+
+		public static String curio(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float partialTick) {
+			if (parts.length != 4) throw new IllegalArgumentException("curio takes 3 arguments");
+			if (!Functions.isNumeric(parts[2])) throw new IllegalArgumentException("curio argument 2 must be numeric");
+			if (!List.of("damage", "damage_formatted", "name").contains(parts[3])) throw new IllegalArgumentException("curio argument 3 must be \"damage\", \"damage_formatted\", or \"name\"");
+			AtomicReference<String> output = new AtomicReference<>("");
+			CuriosApi.getCuriosInventory(localPlayer).ifPresent(curiosInventory -> {
+				curiosInventory.findCurio(parts[1],Integer.valueOf(parts[2])).ifPresent(slotResult -> {
+					ItemStack stack = slotResult.stack();
+					switch(parts[3]) {
+						case "damage":
+							if (stack.isEmpty() || !stack.isDamageableItem()) {
+								output.set("--");
+								break;
+							} else {
+								output.set(String.format("(%d/%d)", stack.getMaxDamage()-stack.getDamageValue(), stack.getMaxDamage()));
+							}
+						case "damage_formatted":
+							if (stack.isEmpty() || !stack.isDamageableItem()) {
+								output.set(Formatting.DARK_GRAY + "--" + Formatting.RESET);
+								break;
+							} else {
+								String color;
+								int damageLevelpct = Math.round(((stack.getMaxDamage()-stack.getDamageValue()) * 100f)/stack.getMaxDamage());
+								if (damageLevelpct >= 80) {
+									color = Formatting.GREEN;
+								} else if (damageLevelpct >= 60) {
+									color = Formatting.DARK_GREEN;
+								} else if (damageLevelpct >= 40) {
+									color = Formatting.GOLD;
+								} else if (damageLevelpct >= 20) {
+									color = Formatting.YELLOW;
+								} else if (damageLevelpct >= 10) {
+									color = Formatting.DARK_RED;
+								} else {
+									color = Formatting.RED;
+								}
+								output.set(color + String.format("(%d/%d)", stack.getMaxDamage()-stack.getDamageValue(), stack.getMaxDamage()) + Formatting.RESET);
+								break;
+							}
+						case "name":
+							if (!stack.isEmpty()) {
+								String name = getNameFromStack(stack);
+								output.set(Functions.translateInternal(name, localPlayer));
+							}
+					}
+				});
+			});
+			return output.get();
 		}
 	}
 
@@ -572,56 +568,6 @@ public class Tags {
 		public static Object exists(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 3) throw new IllegalArgumentException("exists takes 2 arguments");
 			return !parts[1].isEmpty() ? parts[2] : "";
-		}
-
-		public static String curio(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float partialTick) {
-			if (parts.length != 4) throw new IllegalArgumentException("curio takes 3 arguments");
-			if (!isNumeric(parts[2])) throw new IllegalArgumentException("curio argument 2 must be numeric");
-			if (!List.of("damage", "damage_formatted", "name").contains(parts[3])) throw new IllegalArgumentException("curio argument 3 must be \"damage\", \"damage_formatted\", or \"name\"");
-			AtomicReference<String> output = new AtomicReference<>("");
-			CuriosApi.getCuriosInventory(localPlayer).ifPresent(curiosInventory -> {
-				curiosInventory.findCurio(parts[1],Integer.valueOf(parts[2])).ifPresent(slotResult -> {
-					ItemStack stack = slotResult.stack();
-					switch(parts[3]) {
-						case "damage":
-							if (stack.isEmpty() || !stack.isDamageableItem()) {
-								output.set("--");
-								break;
-							} else {
-								output.set(String.format("(%d/%d)", stack.getMaxDamage()-stack.getDamageValue(), stack.getMaxDamage()));
-							}
-						case "damage_formatted":
-							if (stack.isEmpty() || !stack.isDamageableItem()) {
-								output.set(Formatting.DARK_GRAY + "--" + Formatting.RESET);
-								break;
-							} else {
-								String color;
-								int damageLevelpct = Math.round(((stack.getMaxDamage()-stack.getDamageValue()) * 100f)/stack.getMaxDamage());
-								if (damageLevelpct >= 80) {
-									color = Formatting.GREEN;
-								} else if (damageLevelpct >= 60) {
-									color = Formatting.DARK_GREEN;
-								} else if (damageLevelpct >= 40) {
-									color = Formatting.GOLD;
-								} else if (damageLevelpct >= 20) {
-									color = Formatting.YELLOW;
-								} else if (damageLevelpct >= 10) {
-									color = Formatting.DARK_RED;
-								} else {
-									color = Formatting.RED;
-								}
-								output.set(color + String.format("(%d/%d)", stack.getMaxDamage()-stack.getDamageValue(), stack.getMaxDamage()) + Formatting.RESET);
-								break;
-							}
-						case "name":
-							if (!stack.isEmpty()) {
-								String name = Equipment.getNameFromStack(stack);
-								output.set(Functions.translateInternal(name, localPlayer));
-							}
-					}
-				});
-			});
-			return output.get();
 		}
 
 		public static String translateInternal(String key, LocalPlayer localPlayer) {

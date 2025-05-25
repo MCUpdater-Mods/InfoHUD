@@ -110,8 +110,8 @@ dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
     implementation(jarJar('org.apache.commons:commons-text:1.13.0'))
-    runtimeOnly "curse.maven:adorned-1036809:${adorned_fileid}"
-    compileOnly "curse.maven:adorned-1036809:${adorned_fileid}"
+    runtimeOnly "curse.maven:curios-309927:${curios_fileid}"
+    compileOnly "curse.maven:curios-309927:${curios_fileid}"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

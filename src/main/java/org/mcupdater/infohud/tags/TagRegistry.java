@@ -63,6 +63,9 @@ public class TagRegistry {
 		register("blocklight", Tags.World::blocklight);
 		register("structure", Tags.World::structure);
 		register("dimension", Tags.World::dimension);
+		register("slimechunk", Tags.World::slimeChunk);
+		register("moonphase", Tags.World::moonPhase);
+		register("moonphasenum", Tags.World::moonPhaseNum);
 
 		// Player
 		register("fullposition", Tags.Player::position);
@@ -71,26 +74,17 @@ public class TagRegistry {
 		register("pos_z", Tags.Player::pos_z);
 		register("bed_distance", Tags.Player::bedDistance);
 		register("heading", Tags.Player::heading);
+		register("awake_days", Tags.Player::awakeDays);
 
 		// Equipment
-		register("bootsdamage", Tags.Equipment::bootsdamage);
-		register("bootsdamage_formatted", Tags.Equipment::bootsdamage_formatted);
-		register("bootsname", Tags.Equipment::bootsname);
-		register("leggingsdamage", Tags.Equipment::leggingsdamage);
-		register("leggingsdamage_formatted", Tags.Equipment::leggingsdamage_formatted);
-		register("leggingsname", Tags.Equipment::leggingsname);
-		register("chestplatedamage", Tags.Equipment::chestplatedamage);
-		register("chestplatedamage_formatted", Tags.Equipment::chestplatedamage_formatted);
-		register("chestplatename", Tags.Equipment::chestplatename);
-		register("helmetdamage", Tags.Equipment::helmetdamage);
-		register("helmetdamage_formatted", Tags.Equipment::helmetdamage_formatted);
-		register("helmetname", Tags.Equipment::helmetname);
-		register("mainhanddamage", Tags.Equipment::mainhanddamage);
-		register("mainhanddamage_formatted", Tags.Equipment::mainhanddamage_formatted);
-		register("mainhandname", Tags.Equipment::mainhandname);
-		register("offhanddamage", Tags.Equipment::offhanddamage);
-		register("offhanddamage_formatted", Tags.Equipment::offhanddamage_formatted);
-		register("offhandname", Tags.Equipment::offhandname);
+		register("mainhand_damage", Tags.Equipment::mainhandDamage);
+		register("mainhand_damage_formatted", Tags.Equipment::mainhandDamageFormatted);
+		register("mainhand_name", Tags.Equipment::mainhandName);
+		register("offhand_damage", Tags.Equipment::offhandDamage);
+		register("offhand_damage_formatted", Tags.Equipment::offhandDamageFormatted);
+		register("offhand_name", Tags.Equipment::offhandName);
+		register("armor", Tags.Equipment::armor);
+		register("curio", Tags.Equipment::curio);
 
 		//Target Info
 		register("targetname", Tags.TargetInfo::targetName);
@@ -104,9 +98,6 @@ public class TagRegistry {
 		register("eq", Tags.Functions::equals);
 		register("ne", Tags.Functions::notEquals);
 		register("exists", Tags.Functions::exists);
-		register("curio", Tags.Functions::curio);
-
-		//registerTag("debug", Tags::debug);
 	}
 
 	public static Object lookup(String key) {
