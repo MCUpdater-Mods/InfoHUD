@@ -1,5 +1,6 @@
 package org.mcupdater.infohud.events;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -9,28 +10,30 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.mcupdater.infohud.InfoHUD;
 import org.mcupdater.infohud.network.InventoryStatus;
 import org.mcupdater.infohud.network.ItemConfigPacket;
 import org.mcupdater.infohud.setup.Config;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
-import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
-import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
-public class InventoryMonitor {
-	public static InventoryMonitor INSTANCE = new InventoryMonitor();
+public class ServerMonitor {
+	public static ServerMonitor INSTANCE = new ServerMonitor();
 	private Map<ServerPlayer, ContainerListener> listenerMap;
 	protected Map<String, Item> monitoredItems;
 	private Map<ServerPlayer, Map<String,Boolean>> playerItemStatus;
+	public Set<ServerPlayer> playerSet;
 
-	public InventoryMonitor() {
+	public ServerMonitor() {
 		listenerMap = new HashMap<>();
 		monitoredItems = new HashMap<>();
 		playerItemStatus = new HashMap<>();
+		playerSet = new LinkedHashSet<>();
 	}
 
 	public static void registerItem(String name, Item item) {
@@ -62,19 +65,22 @@ public class InventoryMonitor {
 
 	@SubscribeEvent
 	public void curiosChanged(CurioChangeEvent curioChangeEvent) {
-		if (curioChangeEvent.getEntity() instanceof ServerPlayer player) {
+		if (curioChangeEvent.getEntity() instanceof ServerPlayer player && playerSet.contains(player)) {
 			updateInventory(player);
 		}
 	}
 
 	@SubscribeEvent
 	public void playerConnected(PlayerEvent.PlayerLoggedInEvent playerLoggedInEvent) {
-		ContainerListener listener = new PlayerContainerMonitor((ServerPlayer) playerLoggedInEvent.getEntity());
-		playerLoggedInEvent.getEntity().inventoryMenu.addSlotListener(listener);
-		listenerMap.put((ServerPlayer) playerLoggedInEvent.getEntity(), listener);
-		updateInventory(playerLoggedInEvent.getEntity());
-		if (Config.REQUIRE_ITEMS.get()) {
-			PacketDistributor.sendToPlayer((ServerPlayer) playerLoggedInEvent.getEntity(), new ItemConfigPacket(Config.REQUIRE_ITEMS.get()));
+		if (((ServerPlayer) playerLoggedInEvent.getEntity()).connection.hasChannel(ResourceLocation.fromNamespaceAndPath(InfoHUD.MODID,"inventory"))) {
+			ContainerListener listener = new PlayerContainerMonitor((ServerPlayer) playerLoggedInEvent.getEntity());
+			playerLoggedInEvent.getEntity().inventoryMenu.addSlotListener(listener);
+			listenerMap.put((ServerPlayer) playerLoggedInEvent.getEntity(), listener);
+			playerSet.add((ServerPlayer) playerLoggedInEvent.getEntity());
+			updateInventory(playerLoggedInEvent.getEntity());
+			if (Config.REQUIRE_ITEMS.get() && playerSet.contains(playerLoggedInEvent.getEntity())) {
+				PacketDistributor.sendToPlayer((ServerPlayer) playerLoggedInEvent.getEntity(), new ItemConfigPacket(Config.REQUIRE_ITEMS.get()));
+			}
 		}
 	}
 
@@ -82,6 +88,8 @@ public class InventoryMonitor {
 	public void playerDisconnected(PlayerEvent.PlayerLoggedOutEvent playerLoggedOutEvent) {
 		playerLoggedOutEvent.getEntity().inventoryMenu.removeSlotListener(listenerMap.get((ServerPlayer)playerLoggedOutEvent.getEntity()));
 		listenerMap.remove((ServerPlayer)playerLoggedOutEvent.getEntity());
+		PlayerMonitor.awakeDaysMap.remove(playerLoggedOutEvent.getEntity());
+		playerSet.remove(playerLoggedOutEvent.getEntity());
 	}
 
 	private class PlayerContainerMonitor implements ContainerListener {

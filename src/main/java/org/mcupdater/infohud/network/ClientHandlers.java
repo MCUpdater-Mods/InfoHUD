@@ -2,7 +2,6 @@ package org.mcupdater.infohud.network;
 
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.mcupdater.infohud.InfoHUDClient;
-import org.mcupdater.infohud.setup.Config;
 
 public class ClientHandlers {
 
@@ -20,5 +19,13 @@ public class ClientHandlers {
 
 	public static void bedDistanceHandler(BedDistance bedDistance, IPayloadContext iPayloadContext) {
 		InfoHUDClient.bedDistance = bedDistance.distance();
+	}
+
+	public static void awakeDaysHandler(AwakeDays awakeDays, IPayloadContext iPayloadContext) {
+		InfoHUDClient.awakeDays = awakeDays.days();
+	}
+
+	public static void slimeChunkHandler(SlimeChunk slimeChunk, IPayloadContext iPayloadContext) {
+		InfoHUDClient.slimeChunk = slimeChunk.slimeChunk();
 	}
 }

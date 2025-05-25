@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Config {
+    public static ModConfigSpec COMMON_CONFIG;
     public static ModConfigSpec CLIENT_CONFIG;
     public static ModConfigSpec.BooleanValue REQUIRE_ITEMS;
     public static ModConfigSpec.ConfigValue<List<? extends String>> topLeftEntries;
@@ -31,51 +32,54 @@ public class Config {
     public static ModConfigSpec.IntValue bottomRightYOffset;
 
     static {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-        REQUIRE_ITEMS = builder.define("require_items", true);
-        builder.push("top_left");
-        topLeftEntries = builder.defineListAllowEmpty("entries", Arrays.asList("Day: ${yellow}${day} ${mctime}","Biome: ${yellow}${biome}","Light: ${gt:${light}:4:${yellow}:${red}}${light}"),() -> "", (entry) -> true);
-        topLeftXOffset = builder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
-        topLeftYOffset = builder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
+        ModConfigSpec.Builder commonBuilder = new ModConfigSpec.Builder();
+        REQUIRE_ITEMS = commonBuilder.define("require_items", true);
+        COMMON_CONFIG = commonBuilder.build();
 
-        builder.push("middle_left");
-        middleLeftEntries = builder.defineListAllowEmpty("entries", new ArrayList<>(),() -> "",(entry) -> true);
-        middleLeftXOffset = builder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
+        ModConfigSpec.Builder clientBuilder = new ModConfigSpec.Builder();
+        clientBuilder.push("top_left");
+        topLeftEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Day: ${yellow}${day} ${mctime}","Biome: ${yellow}${biome}","Light: ${gt:${light}:4:${yellow}:${red}}${light}"),() -> "", (entry) -> true);
+        topLeftXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
+        topLeftYOffset = clientBuilder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
 
-        builder.push("bottom_left");
-        bottomLeftEntries = builder.defineListAllowEmpty("entries", Arrays.asList("Helmet: ${helmetdamage_formatted} ${helmetname}", "Chestplate: ${chestplatedamage_formatted} ${chestplatename}", "Leggings: ${leggingsdamage_formatted} ${leggingsname}", "Boots: ${bootsdamage_formatted} ${bootsname}"),() -> "",(entry) -> true);
-        bottomLeftXOffset = builder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
-        bottomLeftYOffset = builder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
+        clientBuilder.push("middle_left");
+        middleLeftEntries = clientBuilder.defineListAllowEmpty("entries", new ArrayList<>(),() -> "",(entry) -> true);
+        middleLeftXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
 
-        builder.push("top_center");
-        topCenterEntries = builder.defineListAllowEmpty("entries", new ArrayList<>(), () -> "", (entry) -> true);
-        topCenterYOffset = builder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
+        clientBuilder.push("bottom_left");
+        bottomLeftEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Helmet: ${armor:head:damage_formatted} ${armor:head:name}", "Chestplate: ${armor:chest:damage_formatted} ${armor:chest:name}", "Leggings: ${armor:legs:damage_formatted} ${armor:legs:name}", "Boots: ${armor:boots:damage_formatted} ${armor:boots:name}"),() -> "",(entry) -> true);
+        bottomLeftXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
+        bottomLeftYOffset = clientBuilder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
 
-        builder.push("bottom_center");
-        bottomCenterEntries = builder.defineListAllowEmpty("entries", Arrays.asList("Heading: ${heading}","${fullposition}"), () -> "", (entry) -> true);
-        bottomCenterYOffset = builder.defineInRange("yOffset", 50, 0, Integer.MAX_VALUE);
-        builder.pop();
+        clientBuilder.push("top_center");
+        topCenterEntries = clientBuilder.defineListAllowEmpty("entries", new ArrayList<>(), () -> "", (entry) -> true);
+        topCenterYOffset = clientBuilder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
 
-        builder.push("top_right");
-        topRightEntries = builder.defineListAllowEmpty("entries", new ArrayList<>(),() -> "",(entry) -> true);
-        topRightXOffset = builder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
-        topRightYOffset = builder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
+        clientBuilder.push("bottom_center");
+        bottomCenterEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Heading: ${heading}","${fullposition}"), () -> "", (entry) -> true);
+        bottomCenterYOffset = clientBuilder.defineInRange("yOffset", 50, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
 
-        builder.push("middle_right");
-        middleRightEntries = builder.defineListAllowEmpty("entries", new ArrayList<>(),() -> "",(entry) -> true);
-        middleRightXOffset = builder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
+        clientBuilder.push("top_right");
+        topRightEntries = clientBuilder.defineListAllowEmpty("entries", new ArrayList<>(),() -> "",(entry) -> true);
+        topRightXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
+        topRightYOffset = clientBuilder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
 
-        builder.push("bottom_right");
-        bottomRightEntries = builder.defineListAllowEmpty("entries", Arrays.asList("Main: ${mainhandname} ${mainhanddamage_formatted}", "Offhand: ${offhandname} ${offhanddamage_formatted}"),() -> "",(entry) -> true);
-        bottomRightXOffset = builder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
-        bottomRightYOffset = builder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
-        builder.pop();
-        CLIENT_CONFIG = builder.build();
+        clientBuilder.push("middle_right");
+        middleRightEntries = clientBuilder.defineListAllowEmpty("entries", new ArrayList<>(),() -> "",(entry) -> true);
+        middleRightXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
+
+        clientBuilder.push("bottom_right");
+        bottomRightEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Main: ${mainhand_name} ${mainhand_damage_formatted}", "Offhand: ${offhand_name} ${offhand_damage_formatted}"),() -> "",(entry) -> true);
+        bottomRightXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
+        bottomRightYOffset = clientBuilder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
+        clientBuilder.pop();
+        CLIENT_CONFIG = clientBuilder.build();
     }
 }
