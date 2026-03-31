@@ -38,7 +38,7 @@ public class Config {
 
         ModConfigSpec.Builder clientBuilder = new ModConfigSpec.Builder();
         clientBuilder.push("top_left");
-        topLeftEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Day: ${yellow}${day} ${mctime}","Biome: ${yellow}${biome}","Light: ${gt:${light}:4:${yellow}:${red}}${light}"),() -> "", (entry) -> true);
+        topLeftEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Day: ${yellow}${day} ${eq:${daytime}:true:${yellow}:${darkgray}}${mctime}","Biome: ${yellow}${biome}","Light: ${gt:${light}:4:${yellow}:${red}}${light}"),() -> "", (entry) -> true);
         topLeftXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
         topLeftYOffset = clientBuilder.defineInRange("yOffset", 2, 0, Integer.MAX_VALUE);
         clientBuilder.pop();

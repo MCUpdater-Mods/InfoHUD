@@ -61,11 +61,15 @@ public class TagRegistry {
 		register("light", Tags.World::light);
 		register("skylight", Tags.World::skylight);
 		register("blocklight", Tags.World::blocklight);
+		register("daytime", Tags.World::daytime);
+		register("nighttime", Tags.World::nighttime);
 		register("structure", Tags.World::structure);
 		register("dimension", Tags.World::dimension);
 		register("slimechunk", Tags.World::slimeChunk);
 		register("moonphase", Tags.World::moonPhase);
 		register("moonphasenum", Tags.World::moonPhaseNum);
+		register("raining", Tags.World::raining);
+		register("thundering", Tags.World::thundering);
 
 		// Player
 		register("fullposition", Tags.Player::position);

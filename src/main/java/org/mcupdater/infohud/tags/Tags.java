@@ -303,13 +303,30 @@ public class Tags {
 		public static Integer moonPhaseNum(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			return clientLevel.getMoonPhase();
 		}
+
+		public static Boolean daytime(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return InfoHUDClient.isDaytime;
+		}
+
+
+		public static Boolean nighttime(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return !InfoHUDClient.isDaytime;
+		}
+
+		public static Boolean raining(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return clientLevel.isRaining();
+		}
+
+		public static Boolean thundering(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
+			return clientLevel.isThundering();
+		}
 	}
 
 	public static class Equipment {
 
 		public static String getNameFromStack(ItemStack stack) {
 			return stack.getComponents().has(DataComponents.CUSTOM_NAME) ?
-					stack.getComponents().get(DataComponents.CUSTOM_NAME).tryCollapseToString() :
+					stack.getComponents().get(DataComponents.CUSTOM_NAME).getString() :
 					stack.getDescriptionId();
 		}
 

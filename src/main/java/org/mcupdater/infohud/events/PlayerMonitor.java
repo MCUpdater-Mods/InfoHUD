@@ -16,10 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.mcupdater.infohud.InfoHUD;
-import org.mcupdater.infohud.network.AwakeDays;
-import org.mcupdater.infohud.network.BedDistance;
-import org.mcupdater.infohud.network.SlimeChunk;
-import org.mcupdater.infohud.network.StructureKey;
+import org.mcupdater.infohud.network.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +28,7 @@ public class PlayerMonitor {
 	protected static Map<Player, String> structures = new HashMap<>();
 	public static Map<Player, Integer> awakeDaysMap = new HashMap<>();
 	public static Map<Player, Boolean> slimeChunkMap = new HashMap<>();
+	public static Map<Player, Boolean> daytimeMap = new HashMap<>();
 
 	@SubscribeEvent
 	public static void playerTick(PlayerTickEvent.Post tickEvent) {
@@ -40,6 +38,9 @@ public class PlayerMonitor {
 			if (!ServerMonitor.INSTANCE.playerSet.contains(serverPlayer)) return;
 		// Check Structure
 		checkStructure(serverPlayer);
+
+		// Update Daytime
+		updateDaytime(serverPlayer);
 
 		long distance = -1L;
 			// Check Bed Distance
@@ -61,6 +62,16 @@ public class PlayerMonitor {
 			if (!slimeChunkMap.containsKey(player) || slimeChunkMap.get(player) != slimeChunk) {
 				slimeChunkMap.put(player, slimeChunk);
 				PacketDistributor.sendToPlayer(serverPlayer, new SlimeChunk(slimeChunk));
+			}
+		}
+	}
+
+	private static void updateDaytime(Player player) {
+		if (player.getServer() != null) {
+			Boolean daytime = player.getServer().getLevel(player.level().dimension()).isDay();
+			if (!daytimeMap.containsKey(player) || !daytimeMap.get(player).equals(daytime)) {
+				daytimeMap.put(player, daytime);
+				PacketDistributor.sendToPlayer((ServerPlayer) player, new DaytimePacket(daytime));
 			}
 		}
 	}

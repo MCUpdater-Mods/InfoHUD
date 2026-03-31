@@ -23,6 +23,7 @@ public class InfoHUDClient {
 	public static Integer awakeDays = 0;
 	public static Boolean slimeChunk = false;
 	public static Boolean showOverlay = true;
+	public static Boolean isDaytime = false;
 
 	public InfoHUDClient(IEventBus modEventBus, ModContainer modContainer) {
 		modContainer.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG);

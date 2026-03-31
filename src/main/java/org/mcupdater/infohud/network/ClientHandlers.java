@@ -28,4 +28,8 @@ public class ClientHandlers {
 	public static void slimeChunkHandler(SlimeChunk slimeChunk, IPayloadContext iPayloadContext) {
 		InfoHUDClient.slimeChunk = slimeChunk.slimeChunk();
 	}
+
+	public static void daytimePacketHandler(DaytimePacket daytimePacket, IPayloadContext iPayloadContext) {
+		InfoHUDClient.isDaytime = daytimePacket.isDaytime();
+	}
 }

@@ -42,5 +42,10 @@ public class NetworkHandler {
 				SlimeChunk.STREAM_CODEC,
 				ClientHandlers::slimeChunkHandler
 		);
+		registrar.playToClient(
+				DaytimePacket.TYPE,
+				DaytimePacket.STREAM_CODEC,
+				ClientHandlers::daytimePacketHandler
+		);
 	}
 }
