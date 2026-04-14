@@ -1,6 +1,6 @@
 package org.mcupdater.infohud.events;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -10,6 +10,8 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import org.mcupdater.infohud.InfoHUD;
 import org.mcupdater.infohud.network.InventoryStatus;
 import org.mcupdater.infohud.network.ItemConfigPacket;
@@ -64,7 +66,7 @@ public class ServerMonitor {
 	}
 
 	@SubscribeEvent
-	public void curiosChanged(CurioChangeEvent curioChangeEvent) {
+	public void curiosChanged(CurioChangeEvent.Item curioChangeEvent) {
 		if (curioChangeEvent.getEntity() instanceof ServerPlayer player && playerSet.contains(player)) {
 			updateInventory(player);
 		}
@@ -72,7 +74,7 @@ public class ServerMonitor {
 
 	@SubscribeEvent
 	public void playerConnected(PlayerEvent.PlayerLoggedInEvent playerLoggedInEvent) {
-		if (((ServerPlayer) playerLoggedInEvent.getEntity()).connection.hasChannel(ResourceLocation.fromNamespaceAndPath(InfoHUD.MODID,"inventory"))) {
+		if (((ServerPlayer) playerLoggedInEvent.getEntity()).connection.hasChannel(Identifier.fromNamespaceAndPath(InfoHUD.MODID,"inventory"))) {
 			ContainerListener listener = new PlayerContainerMonitor((ServerPlayer) playerLoggedInEvent.getEntity());
 			playerLoggedInEvent.getEntity().inventoryMenu.addSlotListener(listener);
 			listenerMap.put((ServerPlayer) playerLoggedInEvent.getEntity(), listener);

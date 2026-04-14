@@ -2,12 +2,13 @@ package org.mcupdater.infohud.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookupFactory;
+import org.mcupdater.infohud.InfoHUD;
 import org.mcupdater.infohud.InfoHUDClient;
 import org.mcupdater.infohud.setup.Config;
 import org.mcupdater.infohud.tags.TagRegistry;
@@ -26,7 +27,7 @@ public class Overlay {
 	@SubscribeEvent
 	public static void renderOverlay(RenderGuiEvent.Post event) {
 		if (!InfoHUDClient.showOverlay) return;
-		GuiGraphics guiGraphics = event.getGuiGraphics();
+		GuiGraphicsExtractor guiGraphics = event.getGuiGraphics();
 		Font font = Minecraft.getInstance().font;
 		int xOffset;
 		int yOffset;
@@ -37,7 +38,7 @@ public class Overlay {
 		yOffset = Config.topLeftYOffset.get();
 		int lineNum = 0;
 		for (String line : lines) {
-			guiGraphics.drawString(font, line, xOffset, (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, xOffset, (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Middle Left
@@ -46,7 +47,7 @@ public class Overlay {
 		yOffset = (guiGraphics.guiHeight()/2) - ((lines.size() * font.lineHeight)/2);
 		lineNum = 0;
 		for (String line : lines) {
-			guiGraphics.drawString(font, line, xOffset, (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, xOffset, (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Bottom Left
@@ -55,7 +56,7 @@ public class Overlay {
 		yOffset = guiGraphics.guiHeight() - Config.bottomLeftYOffset.get() - (lines.size() * font.lineHeight);
 		lineNum = 0;
 		for (String line : lines) {
-			guiGraphics.drawString(font, line, xOffset, (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, xOffset, (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Top Center
@@ -65,7 +66,7 @@ public class Overlay {
 		lineNum = 0;
 		for (String line : lines) {
 			int width = font.width(line);
-			guiGraphics.drawString(font, line, xOffset - (width/2), (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, xOffset - (width/2), (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Bottom Center
@@ -75,7 +76,7 @@ public class Overlay {
 		lineNum = 0;
 		for (String line : lines) {
 			int width = font.width(line);
-			guiGraphics.drawString(font, line, xOffset - (width/2), (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, xOffset - (width/2), (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Top Right
@@ -85,7 +86,7 @@ public class Overlay {
 		lineNum = 0;
 		for (String line : lines) {
 			int width = font.width(line);
-			guiGraphics.drawString(font, line, guiGraphics.guiWidth() - xOffset - width, (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, guiGraphics.guiWidth() - xOffset - width, (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Middle Right
@@ -95,7 +96,7 @@ public class Overlay {
 		lineNum = 0;
 		for (String line : lines) {
 			int width = font.width(line);
-			guiGraphics.drawString(font, line, guiGraphics.guiWidth() - xOffset - width, (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, guiGraphics.guiWidth() - xOffset - width, (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 		//Bottom Right
@@ -105,7 +106,7 @@ public class Overlay {
 		lineNum = 0;
 		for (String line : lines) {
 			int width = font.width(line);
-			guiGraphics.drawString(font, line, guiGraphics.guiWidth() - xOffset - width, (lineNum * font.lineHeight) + yOffset, 0x00FFFFFF, true);
+			guiGraphics.text(font, line, guiGraphics.guiWidth() - xOffset - width, (lineNum * font.lineHeight) + yOffset, 0xFFFFFFFF, true);
 			lineNum++;
 		}
 	}

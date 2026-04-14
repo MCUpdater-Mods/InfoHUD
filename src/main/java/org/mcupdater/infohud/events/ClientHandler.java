@@ -7,7 +7,7 @@ import org.mcupdater.infohud.InfoHUD;
 import org.mcupdater.infohud.InfoHUDClient;
 import org.mcupdater.infohud.setup.KeyMappings;
 
-@EventBusSubscriber(modid=InfoHUD.MODID, bus=EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid=InfoHUD.MODID)
 public class ClientHandler {
 
 	@SubscribeEvent

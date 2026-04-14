@@ -1,8 +1,9 @@
 package org.mcupdater.infohud.events;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.player.Player;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.storage.LevelData;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@EventBusSubscriber(modid=InfoHUD.MODID,bus= EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid=InfoHUD.MODID)
 public class PlayerMonitor {
 	protected static Map<Player, String> structures = new HashMap<>();
 	public static Map<Player, Integer> awakeDaysMap = new HashMap<>();
@@ -44,8 +46,9 @@ public class PlayerMonitor {
 
 		long distance = -1L;
 			// Check Bed Distance
-			if (serverPlayer.getRespawnDimension().equals(player.level().dimension()) && serverPlayer.getRespawnPosition() != null) {
-				distance = Math.round(Math.sqrt(serverPlayer.getRespawnPosition().distSqr(player.blockPosition())));
+			LevelData.RespawnData respawnData = serverPlayer.getRespawnConfig().respawnData();
+			if (respawnData.dimension().equals(player.level().dimension()) && respawnData.pos() != null) {
+				distance = Math.round(Math.sqrt(respawnData.pos().distSqr(player.blockPosition())));
 			}
 			PacketDistributor.sendToPlayer(serverPlayer, new BedDistance(distance));
 
@@ -57,8 +60,8 @@ public class PlayerMonitor {
 			}
 
 			// Check Slime Chunk (Magic number is constant salt for slimes)
-			ChunkPos chunkPos = new ChunkPos(player.blockPosition());
-			boolean slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x, chunkPos.z, ((WorldGenLevel) player.level()).getSeed(), 987234911L).nextInt(10) == 0;
+			ChunkPos chunkPos = ChunkPos.containing(player.blockPosition());
+			boolean slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x(), chunkPos.z(), ((WorldGenLevel) player.level()).getSeed(), 987234911L).nextInt(10) == 0;
 			if (!slimeChunkMap.containsKey(player) || slimeChunkMap.get(player) != slimeChunk) {
 				slimeChunkMap.put(player, slimeChunk);
 				PacketDistributor.sendToPlayer(serverPlayer, new SlimeChunk(slimeChunk));
@@ -67,8 +70,8 @@ public class PlayerMonitor {
 	}
 
 	private static void updateDaytime(Player player) {
-		if (player.getServer() != null) {
-			Boolean daytime = player.getServer().getLevel(player.level().dimension()).isDay();
+		if (player.level() instanceof ServerLevel serverLevel) {
+			Boolean daytime = !serverLevel.isDarkOutside();
 			if (!daytimeMap.containsKey(player) || !daytimeMap.get(player).equals(daytime)) {
 				daytimeMap.put(player, daytime);
 				PacketDistributor.sendToPlayer((ServerPlayer) player, new DaytimePacket(daytime));
@@ -77,10 +80,10 @@ public class PlayerMonitor {
 	}
 
 	private static void checkStructure(Player player) {
-		if (player.getServer() != null) {
-			List<StructureStart> starts = player.getServer().getLevel(player.level().dimension()).structureManager().startsForStructure(new ChunkPos(player.blockPosition()), context -> true);
+		if (player.level() instanceof ServerLevel serverLevel) {
+			List<StructureStart> starts = serverLevel.structureManager().startsForStructure(player.chunkPosition(), context -> true);
 			Optional<Structure> structure = starts.stream().filter(start -> start.getBoundingBox().isInside(player.blockPosition())).map(StructureStart::getStructure).findFirst();
-			ResourceLocation resource = structure.map(value -> player.level().registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(value)).orElse(InfoHUD.EMPTY_STRUCTURE);
+			Identifier resource = structure.map(value -> player.level().registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(value)).orElse(InfoHUD.EMPTY_STRUCTURE);
 			String name = Util.makeDescriptionId("structure", resource);
 			if (!structures.containsKey(player) || !structures.get(player).equals(resource.toString())) {
 				structures.put(player, resource.toString());

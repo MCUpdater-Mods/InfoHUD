@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.mcupdater.infohud.InfoHUD;
 
-@EventBusSubscriber(modid = InfoHUD.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = InfoHUD.MODID)
 public class NetworkHandler {
 
 	@SubscribeEvent

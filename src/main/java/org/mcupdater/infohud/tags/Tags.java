@@ -1,6 +1,6 @@
 package org.mcupdater.infohud.tags;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -11,6 +11,7 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -209,12 +210,12 @@ public class Tags {
 
 		public static String day(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%d", level.getDayTime() / 24000);
+			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%d", level.getOverworldClockTime() / 24000);
 		}
 
 		public static String mctime(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			long time = level.getDayTime();
+			long time = level.getOverworldClockTime();
 			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%02d:%02d", ((time / 1000) + 6) % 24, (time % 1000) * 60 / 1000);
 		}
 
@@ -235,13 +236,13 @@ public class Tags {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			return Util.makeDescriptionId(
 					"biome",
-					level.registryAccess().registryOrThrow(Registries.BIOME).getKey(level.getBiome(localPlayer.blockPosition()).value())
+					level.registryAccess().lookupOrThrow(Registries.BIOME).getKey(level.getBiome(localPlayer.blockPosition()).value())
 			);
 		}
 
 		public static String light(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			return String.format(Locale.ENGLISH, "%d", Math.max(level.getBrightness(LightLayer.BLOCK, localPlayer.blockPosition()), Math.min(level.getBrightness(LightLayer.SKY, localPlayer.blockPosition()), Math.round(level.getSkyDarken(partialTick) * 15.0f))));
+			return String.format(Locale.ENGLISH, "%d", Math.max(level.getBrightness(LightLayer.BLOCK, localPlayer.blockPosition()), Math.min(level.getBrightness(LightLayer.SKY, localPlayer.blockPosition()), Math.round(level.getSkyDarken() * 15.0f))));
 		}
 
 		public static String skylight(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
@@ -261,7 +262,7 @@ public class Tags {
 
 		public static String dimension(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			return Functions.translateInternal(Util.makeDescriptionId("dimension", clientLevel.dimension().location()),localPlayer);
+			return Functions.translateInternal(Util.makeDescriptionId("dimension", clientLevel.dimension().identifier()),localPlayer);
 		}
 
 		public static Boolean slimeChunk(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
@@ -301,7 +302,7 @@ public class Tags {
 		}
 
 		public static Integer moonPhaseNum(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
-			return clientLevel.getMoonPhase();
+			return (int) ((clientLevel.getOverworldClockTime() / 24000) % 8);
 		}
 
 		public static Boolean daytime(String[] strings, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
@@ -325,14 +326,15 @@ public class Tags {
 	public static class Equipment {
 
 		public static String getNameFromStack(ItemStack stack) {
-			return stack.getComponents().has(DataComponents.CUSTOM_NAME) ?
-					stack.getComponents().get(DataComponents.CUSTOM_NAME).getString() :
-					stack.getDescriptionId();
+			return
+					/* stack.getComponents().has(DataComponents.CUSTOM_NAME) ?
+					stack.getComponents().get(DataComponents.CUSTOM_NAME).getString() : */
+					stack.getDisplayName().getString();
 		}
 
 		public static String mainhandDamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack mainhand = localPlayer.getInventory().getSelected();
+			ItemStack mainhand = localPlayer.getInventory().getSelectedItem();
 			if (mainhand.isEmpty()) return "--";
 			if (!mainhand.isDamageableItem()) return mainhand.getCount() + "x";
 			return String.format("(%d/%d)",(mainhand.getMaxDamage()-mainhand.getDamageValue()), mainhand.getMaxDamage());
@@ -341,7 +343,7 @@ public class Tags {
 		public static String mainhandDamageFormatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			String color;
-			ItemStack mainhand = localPlayer.getInventory().getSelected();
+			ItemStack mainhand = localPlayer.getInventory().getSelectedItem();
 			if (mainhand.isEmpty()) return Formatting.DARK_GRAY + "--" + Formatting.RESET;
 			if (!mainhand.isDamageableItem()) return mainhand.getCount() + "x";
 			int damageLevelpct = Math.round(((mainhand.getMaxDamage()-mainhand.getDamageValue()) * 100f)/mainhand.getMaxDamage());
@@ -363,7 +365,7 @@ public class Tags {
 
 		public static String mainhandName(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack mainhand = localPlayer.getInventory().getSelected();
+			ItemStack mainhand = localPlayer.getInventory().getSelectedItem();
 			if (mainhand.isEmpty()) return "";
 			String name = getNameFromStack(mainhand);
 			return Functions.translateInternal(name, localPlayer);
@@ -371,7 +373,7 @@ public class Tags {
 
 		public static String offhandDamage(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack offhand = localPlayer.getInventory().offhand.get(0);
+			ItemStack offhand = localPlayer.getInventory().getItem(40);
 			if (offhand.isEmpty()) return "--";
 			if (!offhand.isDamageableItem()) return offhand.getCount() + "x";
 			return String.format("(%d/%d)",(offhand.getMaxDamage()-offhand.getDamageValue()), offhand.getMaxDamage());
@@ -380,7 +382,7 @@ public class Tags {
 		public static String offhandDamageFormatted(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
 			String color;
-			ItemStack offhand = localPlayer.getInventory().offhand.get(0);
+			ItemStack offhand = localPlayer.getInventory().getItem(40);
 			if (offhand.isEmpty()) return Formatting.DARK_GRAY + "--" + Formatting.RESET;
 			if (!offhand.isDamageableItem()) return offhand.getCount() + "x";
 			int damageLevelpct = Math.round(((offhand.getMaxDamage()-offhand.getDamageValue()) * 100f)/offhand.getMaxDamage());
@@ -402,7 +404,7 @@ public class Tags {
 
 		public static String offhandName(String[] parts, Minecraft minecraft, ClientLevel clientLevel, LocalPlayer localPlayer, float v) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			ItemStack offhand = localPlayer.getInventory().offhand.get(0);
+			ItemStack offhand = localPlayer.getInventory().getItem(40);
 			if (offhand.isEmpty()) return "";
 			String name = getNameFromStack(offhand);
 			return Functions.translateInternal(name, localPlayer);
@@ -418,7 +420,7 @@ public class Tags {
 				InfoHUD.LOGGER.error("Something went wrong!\n" + Arrays.toString(parts));
 				return "";
 			}
-			ItemStack stack = localPlayer.getInventory().getArmor(slot);
+			ItemStack stack = localPlayer.getInventory().getItem(36 + slot);
 			AtomicReference<String> output = new AtomicReference<>("");
 			switch(parts[2]) {
 				case "damage":
@@ -589,7 +591,7 @@ public class Tags {
 
 		public static String translateInternal(String key, LocalPlayer localPlayer) {
 			try {
-				return new TranslatableContents(key, null, TranslatableContents.NO_ARGS).resolve(null, localPlayer, 0).getString();
+				return new TranslatableContents(key, null, TranslatableContents.NO_ARGS).resolve(null, 0).getString();
 			} catch (Exception e) {
 				return "TRANSLATION ERROR!";
 			}

@@ -1,7 +1,7 @@
 package org.mcupdater.infohud;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.IEventBus;
@@ -23,10 +23,10 @@ import java.util.Map;
 public class InfoHUD
 {
     public static final String MODID = "infohud";
-    public static final ResourceLocation EMPTY_STRUCTURE = ResourceLocation.fromNamespaceAndPath(MODID, "empty_structure");
+    public static final Identifier EMPTY_STRUCTURE = Identifier.fromNamespaceAndPath(MODID, "empty_structure");
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final Map<ResourceLocation,ResourceLocation> structureMap = new HashMap<>();
+    public static final Map<Identifier,Identifier> structureMap = new HashMap<>();
 
     public InfoHUD(IEventBus modEventBus, ModContainer modContainer)
     {

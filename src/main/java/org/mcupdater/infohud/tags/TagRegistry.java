@@ -110,7 +110,7 @@ public class TagRegistry {
 		LocalPlayer player = minecraft.player;
 		String[] elements = key.split("(?<!\\\\):");
 		try {
-			return TAG_MAP.get(elements[0]).getValue(elements, minecraft, level, player, minecraft.getTimer().getGameTimeDeltaPartialTick(true));
+			return TAG_MAP.get(elements[0]).getValue(elements, minecraft, level, player, minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
 		} catch (IllegalArgumentException e) {
 			InfoHUD.LOGGER.error(e.getMessage() + "\n" + Arrays.toString(elements));
 			return "";
