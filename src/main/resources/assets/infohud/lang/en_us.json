@@ -13,6 +13,8 @@
   "infohud.configuration.entries": "Entries",
   "infohud.configuration.xOffset": "X Offset",
   "infohud.configuration.yOffset": "Y Offset",
+  "infohud.configuration.preferences": "Preferences",
+  "infohud.configuration.dayOffset": "Day count offset",
   "infohud.direction.s": "South",
   "infohud.direction.sw": "Southwest",
   "infohud.direction.w": "West",
