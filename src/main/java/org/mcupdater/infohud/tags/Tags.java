@@ -209,7 +209,7 @@ public class Tags {
 
 		public static String day(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {
 			if (parts.length != 1) throw new IllegalArgumentException(String.format("%s takes 0 arguments",parts[0]));
-			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%d", level.getDayTime() / 24000);
+			return ((Config.REQUIRE_ITEMS.get() || InfoHUDClient.serverRequiresItems) && !InfoHUDClient.localStatus.status().get("clock") ? (Formatting.FORMATTING_CHAR + "k") : "") + String.format(Locale.ENGLISH, "%d", (level.getDayTime() / 24000) + Config.dayCountOffset.get());
 		}
 
 		public static String mctime(String[] parts, Minecraft minecraft, ClientLevel level, LocalPlayer localPlayer, float partialTick) {

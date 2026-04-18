@@ -10,6 +10,7 @@ public class Config {
     public static ModConfigSpec COMMON_CONFIG;
     public static ModConfigSpec CLIENT_CONFIG;
     public static ModConfigSpec.BooleanValue REQUIRE_ITEMS;
+    public static ModConfigSpec.IntValue dayCountOffset;
     public static ModConfigSpec.ConfigValue<List<? extends String>> topLeftEntries;
     public static ModConfigSpec.IntValue topLeftXOffset;
     public static ModConfigSpec.IntValue topLeftYOffset;
@@ -37,6 +38,11 @@ public class Config {
         COMMON_CONFIG = commonBuilder.build();
 
         ModConfigSpec.Builder clientBuilder = new ModConfigSpec.Builder();
+
+        clientBuilder.push("preferences");
+        dayCountOffset = clientBuilder.defineInRange("dayOffset", 0, 0, 1);
+        clientBuilder.pop();
+
         clientBuilder.push("top_left");
         topLeftEntries = clientBuilder.defineListAllowEmpty("entries", Arrays.asList("Day: ${yellow}${day} ${eq:${daytime}:true:${yellow}:${darkgray}}${mctime}","Biome: ${yellow}${biome}","Light: ${gt:${light}:4:${yellow}:${red}}${light}"),() -> "", (entry) -> true);
         topLeftXOffset = clientBuilder.defineInRange("xOffset", 2, 0, Integer.MAX_VALUE);
